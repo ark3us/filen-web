@@ -527,7 +527,12 @@ export const ListItem = memo(({ item, index, type }: { item: DriveCloudItem; ind
 							)}
 						</div>
 						{driveURLState.trash && (
-							<div className="hidden md:flex flex-row dragselect-start-disallowed flex-1 min-w-0">
+							<div
+								className="hidden md:flex flex-row dragselect-start-disallowed shrink-0"
+								style={{
+									width: driveListColumnSize.location
+								}}
+							>
 								<Location parent={item.parent} />
 							</div>
 						)}

@@ -1,11 +1,11 @@
-import { memo, useCallback } from "react"
+import { memo, useCallback, useRef } from "react"
 import { useLocalStorage } from "@uidotdev/usehooks"
 import useRouteParent from "@/hooks/useRouteParent"
 import { useTranslation } from "react-i18next"
 import { ArrowUp, ArrowDown } from "lucide-react"
 import { useDriveItemsStore } from "@/stores/drive.store"
 import { cn } from "@/lib/utils"
-import useDriveListColumnSize from "@/hooks/useDriveListColumnSize"
+import useDriveListColumnSize, { driveListColumnDefaults, type DriveListResizableColumn } from "@/hooks/useDriveListColumnSize"
 import useDriveURLState from "@/hooks/useDriveURLState"
 
 const iconSize = 14
@@ -20,7 +20,61 @@ export const Header = memo(() => {
 	const driveListColumnSize = useDriveListColumnSize()
 	const driveURLState = useDriveURLState()
 
+	// A resize drag ends with a click on the header cell, which would also toggle sorting. The flag is
+	// cleared on the next tick so that trailing click is ignored but real clicks keep working.
+	const resizingRef = useRef<boolean>(false)
+
+	const startResize = useCallback(
+		(column: DriveListResizableColumn) => (e: React.MouseEvent<HTMLDivElement>) => {
+			e.preventDefault()
+			e.stopPropagation()
+
+			resizingRef.current = true
+
+			const startX = e.clientX
+			const startWidth = driveListColumnSize[column]
+			let raf = 0
+
+			const onMouseMove = (ev: MouseEvent) => {
+				cancelAnimationFrame(raf)
+
+				raf = requestAnimationFrame(() => {
+					driveListColumnSize.setWidth(column, startWidth + (startX - ev.clientX))
+				})
+			}
+
+			const onMouseUp = () => {
+				cancelAnimationFrame(raf)
+
+				document.removeEventListener("mousemove", onMouseMove)
+				document.removeEventListener("mouseup", onMouseUp)
+
+				setTimeout(() => {
+					resizingRef.current = false
+				}, 0)
+			}
+
+			document.addEventListener("mousemove", onMouseMove)
+			document.addEventListener("mouseup", onMouseUp)
+		},
+		[driveListColumnSize]
+	)
+
+	const resetWidth = useCallback(
+		(column: DriveListResizableColumn) => (e: React.MouseEvent<HTMLDivElement>) => {
+			e.preventDefault()
+			e.stopPropagation()
+
+			driveListColumnSize.setWidth(column, driveListColumnDefaults[column])
+		},
+		[driveListColumnSize]
+	)
+
 	const name = useCallback(() => {
+		if (resizingRef.current) {
+			return
+		}
+
 		setDriveSortBy(prev => ({
 			...prev,
 			[routeParent]: prev[routeParent] === "nameDesc" ? "nameAsc" : "nameDesc"
@@ -28,6 +82,10 @@ export const Header = memo(() => {
 	}, [setDriveSortBy, routeParent])
 
 	const size = useCallback(() => {
+		if (resizingRef.current) {
+			return
+		}
+
 		setDriveSortBy(prev => ({
 			...prev,
 			[routeParent]: prev[routeParent] === "sizeDesc" ? "sizeAsc" : "sizeDesc"
@@ -35,6 +93,10 @@ export const Header = memo(() => {
 	}, [setDriveSortBy, routeParent])
 
 	const modified = useCallback(() => {
+		if (resizingRef.current) {
+			return
+		}
+
 		setDriveSortBy(prev => ({
 			...prev,
 			[routeParent]: prev[routeParent] === "lastModifiedDesc" ? "lastModifiedAsc" : "lastModifiedDesc"
@@ -66,19 +128,34 @@ export const Header = memo(() => {
 					</div>
 				</div>
 				{driveURLState.trash && (
-					<div className="hidden md:flex flex-row flex-1 min-w-0 items-center">
+					<div
+						className="relative hidden md:flex flex-row items-center shrink-0"
+						style={{
+							width: driveListColumnSize.location
+						}}
+					>
+						<div
+							className="absolute -left-2 -top-1.5 -bottom-1.5 w-3 cursor-col-resize rounded-sm hover:bg-secondary dragselect-start-disallowed"
+							onMouseDown={startResize("location")}
+							onDoubleClick={resetWidth("location")}
+						/>
 						<p className="dragselect-start-disallowed line-clamp-1 text-ellipsis text-muted-foreground">
 							{t("drive.header.location")}
 						</p>
 					</div>
 				)}
 				<div
-					className="flex flex-row items-center cursor-pointer shrink-0"
+					className="relative flex flex-row items-center cursor-pointer shrink-0"
 					onClick={size}
 					style={{
 						width: driveListColumnSize.size
 					}}
 				>
+					<div
+						className="absolute -left-2 -top-1.5 -bottom-1.5 w-3 cursor-col-resize rounded-sm hover:bg-secondary dragselect-start-disallowed"
+						onMouseDown={startResize("size")}
+						onDoubleClick={resetWidth("size")}
+					/>
 					<div
 						className={cn(
 							"flex flex-row gap-2 items-center",
@@ -93,12 +170,17 @@ export const Header = memo(() => {
 					</div>
 				</div>
 				<div
-					className="flex flex-row items-center cursor-pointer shrink-0"
+					className="relative flex flex-row items-center cursor-pointer shrink-0"
 					onClick={modified}
 					style={{
 						width: driveListColumnSize.modified
 					}}
 				>
+					<div
+						className="absolute -left-2 -top-1.5 -bottom-1.5 w-3 cursor-col-resize rounded-sm hover:bg-secondary dragselect-start-disallowed"
+						onMouseDown={startResize("modified")}
+						onDoubleClick={resetWidth("modified")}
+					/>
 					<div
 						className={cn(
 							"flex flex-row gap-2 items-center",
