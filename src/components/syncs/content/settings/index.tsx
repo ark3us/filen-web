@@ -259,6 +259,89 @@ export const Settings = memo(({ sync }: { sync: SyncPair }) => {
 		[setDesktopConfig, sync.uuid, setChanging, errorToast, loadingToast, setSelectedSync, isSyncActive]
 	)
 
+	const editLargeDeletionThreshold = useCallback(async () => {
+		if (isSyncActive) {
+			return
+		}
+
+		const inputResponse = await showInputDialog({
+			title: t("syncs.dialogs.largeDeletionThreshold.title"),
+			continueButtonText: t("syncs.dialogs.largeDeletionThreshold.continue"),
+			value: typeof sync.largeDeletionThreshold === "number" ? sync.largeDeletionThreshold.toString() : "",
+			autoFocusInput: true,
+			placeholder: t("syncs.dialogs.largeDeletionThreshold.placeholder")
+		})
+
+		if (inputResponse.cancelled) {
+			return
+		}
+
+		const value = inputResponse.value.trim()
+		// Empty clears the threshold: back to the default rule, which asks only when a cycle would delete
+		// everything the pair has synced. Anything else must be a whole number of files, rejected here rather
+		// than silently dropped by the engine (which would leave the user thinking a bad value took effect).
+		const largeDeletionThreshold = value.length === 0 ? undefined : Number(value)
+
+		if (largeDeletionThreshold !== undefined && (!Number.isInteger(largeDeletionThreshold) || largeDeletionThreshold < 1)) {
+			errorToast(t("syncs.settings.sections.largeDeletionThreshold.invalid"))
+
+			return
+		}
+
+		setChanging(true)
+
+		const toast = loadingToast()
+
+		try {
+			await window.desktopAPI.syncUpdateLargeDeletionThreshold({
+				uuid: sync.uuid,
+				largeDeletionThreshold
+			})
+
+			setSelectedSync(prev =>
+				prev && prev.uuid === sync.uuid
+					? {
+							...prev,
+							largeDeletionThreshold
+						}
+					: prev
+			)
+
+			setDesktopConfig(prev => ({
+				...prev,
+				syncConfig: {
+					...prev.syncConfig,
+					syncPairs: prev.syncConfig.syncPairs.map(pair =>
+						pair.uuid === sync.uuid
+							? {
+									...pair,
+									largeDeletionThreshold
+								}
+							: pair
+					)
+				}
+			}))
+		} catch (e) {
+			console.error(e)
+
+			errorToast((e as unknown as Error).message ?? (e as unknown as Error).toString())
+		} finally {
+			setChanging(false)
+
+			toast.dismiss()
+		}
+	}, [
+		setDesktopConfig,
+		sync.uuid,
+		sync.largeDeletionThreshold,
+		setChanging,
+		errorToast,
+		loadingToast,
+		setSelectedSync,
+		isSyncActive,
+		t
+	])
+
 	const toggleExcludeDotFiles = useCallback(
 		async (excludeDotFiles: boolean) => {
 			if (isSyncActive) {
@@ -596,6 +679,30 @@ export const Settings = memo(({ sync }: { sync: SyncPair }) => {
 								disabled={changing || isSyncActive}
 							/>
 						</Section>
+						{sync.requireConfirmationOnLargeDeletion === true && (
+							<Section
+								name={t("syncs.settings.sections.largeDeletionThreshold.name")}
+								info={t("syncs.settings.sections.largeDeletionThreshold.info")}
+							>
+								<div className="flex flex-row gap-3 items-center">
+									<p className="text-muted-foreground text-sm">
+										{typeof sync.largeDeletionThreshold === "number"
+											? t("syncs.settings.sections.largeDeletionThreshold.items", {
+													count: sync.largeDeletionThreshold
+												})
+											: t("syncs.settings.sections.largeDeletionThreshold.wholePair")}
+									</p>
+									<Button
+										onClick={editLargeDeletionThreshold}
+										variant="secondary"
+										size="sm"
+										disabled={changing || isSyncActive}
+									>
+										<Edit size={18} />
+									</Button>
+								</div>
+							</Section>
+						)}
 						<Section
 							name={t("syncs.settings.sections.name.name")}
 							info={t("syncs.settings.sections.name.info")}

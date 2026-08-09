@@ -16,6 +16,8 @@ export type ConfirmDeletion = {
 	where: "local" | "remote" | "both"
 	previous: number
 	current: number
+	/** How many items the cycle would delete. With a threshold set the side is not necessarily emptied. */
+	count: number
 }
 
 export type SyncsStore = {

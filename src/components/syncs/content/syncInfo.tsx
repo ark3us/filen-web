@@ -146,10 +146,10 @@ export const SyncInfo = memo(({ syncUUID, paused }: { syncUUID: string; paused: 
 							: t("syncs.dialogs.confirmDeletionRemote.continue"),
 				description:
 					confirmDeletion.where === "both"
-						? t("syncs.dialogs.confirmDeletionBoth.description", { count: confirmDeletion.previous })
+						? t("syncs.dialogs.confirmDeletionBoth.description", { count: confirmDeletion.count })
 						: confirmDeletion.where === "local"
-							? t("syncs.dialogs.confirmDeletionLocal.description", { count: confirmDeletion.previous })
-							: t("syncs.dialogs.confirmDeletionRemote.description", { count: confirmDeletion.previous }),
+							? t("syncs.dialogs.confirmDeletionLocal.description", { count: confirmDeletion.count })
+							: t("syncs.dialogs.confirmDeletionRemote.description", { count: confirmDeletion.count }),
 				continueButtonVariant: "destructive"
 			}))
 		) {
