@@ -37,6 +37,17 @@ npm run dev
 npm run build
 ```
 
+## About this fork — large-deletion confirmation with a configurable threshold
+
+The sync settings of each pair gain a threshold under the existing "Deletion confirmation" switch: how many deleted files or folders trigger the confirmation. Unset, only a deletion of everything in the pair does (the upstream rule).
+
+- **Settings** — "Confirm from" is rendered as a sub-setting of the confirmation switch (it is a parameter of that gate, not a feature beside it) and appears only while the switch is on. The switch reads OFF only when explicitly off — pairs from before the setting existed are protected and shown as such.
+- **Warning bar** — the pending-deletion warning stays on screen until the decision is made; it is no longer overwritten by "Everything synced" a moment after appearing. It clears on `cycleSuccess` only, which the engine suppresses while a decision is pending.
+- **Dialog** — the confirmation shows the actual number of items at stake (`count` from the engine), not the size of the previously-synced tree.
+- **i18n** — the whole confirmation flow (settings rows, dialogs, warning bar) is translated to Italian; other locales fall back to English as before.
+
+The engine semantics live in [`@filen/sync`](https://github.com/ark3us/filen-sync), the desktop wiring in [`@filen/desktop`](https://github.com/ark3us/filen-desktop) — see their READMEs.
+
 ## License
 
 Distributed under the AGPL-3.0 License. See [LICENSE](https://github.com/FilenCloudDienste/filen-s3/blob/main/LICENSE.md) for more information.
