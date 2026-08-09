@@ -1610,10 +1610,10 @@
 				},
 				"largeDeletionThreshold": {
 					"name": "Confirm from",
-					"info": "How many deleted files or folders trigger the question. Unset, only a deletion of everything in the pair does.",
+					"info": "Number of deleted files or folders that triggers the confirmation.",
 					"items": "{{count}} items",
 					"wholePair": "The whole pair",
-					"invalid": "Enter a whole number, 1 or more. Leave it empty to ask only when the whole pair would be deleted."
+					"invalid": "Enter a whole number from 1 up, or leave it empty."
 				}
 			}
 		},

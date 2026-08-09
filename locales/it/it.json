@@ -1545,10 +1545,10 @@
                 },
                 "largeDeletionThreshold": {
                     "name": "Chiedi da",
-                    "info": "Quanti file o cartelle cancellati fanno scattare la domanda. Se non impostato, la fa scattare solo la cancellazione dell'intero contenuto della coppia.",
+                    "info": "Numero di file o cartelle cancellati che fa scattare la conferma.",
                     "items": "{{count}} elementi",
                     "wholePair": "Tutta la coppia",
-                    "invalid": "Inserisci un numero intero, da 1 in su. Lascia vuoto per chiedere solo quando verrebbe cancellata tutta la coppia."
+                    "invalid": "Inserisci un numero intero da 1 in su, oppure lascia vuoto."
                 }
             }
         },
