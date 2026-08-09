@@ -1480,7 +1480,12 @@
             "acquiringLock": "Acquisendo il blocco di sincronizzazione",
             "gettingTrees": "Lettura della directory locale e cloud",
             "remoteSmokeTestFailed": "Impossibile leggere la directory cloud, potrebbe non esistere o non sei connesso a Internet",
-            "localSmokeTestFailed": "Impossibile leggere la directory locale, potrebbe non esistere o non hai accesso in lettura o scrittura"
+            "localSmokeTestFailed": "Impossibile leggere la directory locale, potrebbe non esistere o non hai accesso in lettura o scrittura",
+            "confirm": "Conferma",
+            "restart": "Riavvia",
+            "confirmDeletionBoth": "Conferma la cancellazione di {{previous}} file e cartelle",
+            "confirmDeletionLocal": "Conferma la cancellazione di {{previous}} file e cartelle locali",
+            "confirmDeletionRemote": "Conferma la cancellazione di {{previous}} file e cartelle remoti"
         },
         "empty": {
             "title": "Nessuna sincronizzazione impostata ancora",
@@ -1533,6 +1538,17 @@
                 "disableLocalTrash": {
                     "name": "Disabilita cestino locale",
                     "info": "Abilita o disabilita il cestino locale. Quando disabilitato, il client eliminerà permanentemente file o directory invece di spostarli nella directory del cestino locale all'interno del percorso di sincronizzazione locale"
+                },
+                "requireConfirmationOnLargeDeletion": {
+                    "name": "Conferma cancellazioni",
+                    "info": "Chiedi conferma prima di una cancellazione di massa nella cartella sincronizzata"
+                },
+                "largeDeletionThreshold": {
+                    "name": "Chiedi da",
+                    "info": "Quanti file o cartelle cancellati fanno scattare la domanda. Se non impostato, la fa scattare solo la cancellazione dell'intero contenuto della coppia.",
+                    "items": "{{count}} elementi",
+                    "wholePair": "Tutta la coppia",
+                    "invalid": "Inserisci un numero intero, da 1 in su. Lascia vuoto per chiedere solo quando verrebbe cancellata tutta la coppia."
                 }
             }
         },
@@ -1555,6 +1571,31 @@
                 "title": "Elimina problema",
                 "description": "Sei sicuro di voler eliminare questo problema? Ti preghiamo di assicurarti che sia stato risolto o fosse temporaneo, altrimenti tornerà eventualmente.",
                 "continue": "Elimina"
+            },
+            "largeDeletionThreshold": {
+                "title": "Chiedi conferma da",
+                "placeholder": "Numero di elementi — vuoto significa tutta la coppia",
+                "continue": "Salva"
+            },
+            "confirmDeletionBoth": {
+                "title": "Conferma cancellazione",
+                "description": "Vuoi procedere? {{count}} file e cartelle finiranno nel cestino locale e in quello del cloud. L'operazione non è reversibile.",
+                "continue": "Conferma"
+            },
+            "confirmDeletionLocal": {
+                "title": "Conferma cancellazione",
+                "description": "Vuoi procedere? {{count}} file e cartelle finiranno nel cestino nel cloud. L'operazione non è reversibile.",
+                "continue": "Conferma"
+            },
+            "confirmDeletionRemote": {
+                "title": "Conferma cancellazione",
+                "description": "Vuoi procedere? {{count}} file e cartelle finiranno nel cestino locale. L'operazione non è reversibile.",
+                "continue": "Conferma"
+            },
+            "confirmDeletionRestart": {
+                "title": "Riavvia la sincronizzazione",
+                "description": "Puoi riavviare la sincronizzazione se hai ripristinato manualmente tutti i file e le cartelle.",
+                "continue": "Riavvia"
             }
         },
         "ignored": {

@@ -1610,10 +1610,10 @@
 				},
 				"largeDeletionThreshold": {
 					"name": "Confirm from",
-					"info": "Ask before a sync deletes this many files or directories. Without a limit it only asks when everything this pair has synced would be deleted.",
+					"info": "How many deleted files or folders trigger the question. Unset, only a deletion of everything in the pair does.",
 					"items": "{{count}} items",
 					"wholePair": "The whole pair",
-					"invalid": "Enter a whole number of items (1 or more), or leave it empty to only confirm when the whole pair would be deleted."
+					"invalid": "Enter a whole number, 1 or more. Leave it empty to ask only when the whole pair would be deleted."
 				}
 			}
 		},
@@ -1649,7 +1649,7 @@
 			},
 			"largeDeletionThreshold": {
 				"title": "Confirm deletions from",
-				"placeholder": "Number of items (empty = the whole pair)",
+				"placeholder": "Number of items \u2014 empty means the whole pair",
 				"continue": "Save"
 			},
 			"confirmDeletionLocal": {
