@@ -677,6 +677,11 @@ export const Settings = memo(({ sync }: { sync: SyncPair }) => {
 						<Section
 							name={t("syncs.settings.sections.requireConfirmationOnLargeDeletion.name")}
 							info={t("syncs.settings.sections.requireConfirmationOnLargeDeletion.info")}
+							// The threshold below is a parameter OF this switch, not a setting beside it: it only lowers the
+							// bar this same gate already uses, and it means nothing while the switch is off. Dropping the
+							// divider between them (and indenting the child) is what makes them read as one group instead of
+							// two unrelated rows that happen to be adjacent.
+							withBottomBorder={sync.requireConfirmationOnLargeDeletion === false}
 						>
 							<Switch
 								checked={
@@ -692,6 +697,7 @@ export const Settings = memo(({ sync }: { sync: SyncPair }) => {
 							<Section
 								name={t("syncs.settings.sections.largeDeletionThreshold.name")}
 								info={t("syncs.settings.sections.largeDeletionThreshold.info")}
+								className="pl-6"
 							>
 								<div className="flex flex-row gap-3 items-center">
 									<p className="text-muted-foreground text-sm">
