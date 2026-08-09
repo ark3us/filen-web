@@ -16,6 +16,11 @@ export type ConfirmDeletion = {
 	where: "local" | "remote" | "both"
 	previous: number
 	current: number
+	/**
+	 * How many items the cycle would delete. With a threshold set the side is not necessarily emptied.
+	 * Optional: an engine built before the threshold feature does not send it — fall back to `previous`.
+	 */
+	count?: number
 }
 
 export type SyncsStore = {

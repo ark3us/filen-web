@@ -152,7 +152,14 @@ export const DesktopListener = memo(() => {
 					return
 				}
 
-				if (message.type === "cycleSuccess" || message.type === "cycleStarted" || message.type === "cycleRestarting") {
+				// cycleSuccess ONLY. cycleStarted/cycleRestarting used to clear this too, back when the gate blocked
+				// the cycle: a new cycle starting meant the prompt had been answered. It does not any more — the
+				// cycle now posts the prompt, defers the deletions and finishes, so a cycle starts every ~5s WHILE
+				// the decision is still outstanding. Clearing on it wiped the warning a moment after it appeared and
+				// left the bar reading "everything synced" over a mass deletion waiting for a human. cycleSuccess is
+				// the right (and sufficient) signal: the engine suppresses it while a decision is pending, so
+				// receiving it means the gate no longer fires — the deletions were applied, or they went away.
+				if (message.type === "cycleSuccess") {
 					setConfirmDeletion(prev => ({
 						...prev,
 						[message.syncPair.uuid]: null

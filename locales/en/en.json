@@ -1607,6 +1607,13 @@
 				"requireConfirmationOnLargeDeletion": {
 					"name": "Deletion confirmation",
 					"info": "Manually confirm large deletions in the sync directory"
+				},
+				"largeDeletionThreshold": {
+					"name": "Confirm from",
+					"info": "Number of deleted files or folders that triggers the confirmation.",
+					"items": "{{count}} items",
+					"wholePair": "The whole pair",
+					"invalid": "Enter a whole number from 1 up, or leave it empty."
 				}
 			}
 		},
@@ -1640,19 +1647,24 @@
 				"placeholder": "Name",
 				"continue": "Save"
 			},
+			"largeDeletionThreshold": {
+				"title": "Confirm deletions from",
+				"placeholder": "Number of items \u2014 empty means the whole pair",
+				"continue": "Save"
+			},
 			"confirmDeletionLocal": {
 				"title": "Confirm deletion",
-				"description": "Are you sure? This will move all {{count}} files and directories into the trash in the cloud. This action cannot be undone.",
+				"description": "Are you sure? This will move {{count}} files and directories into the trash in the cloud. This action cannot be undone.",
 				"continue": "Confirm"
 			},
 			"confirmDeletionRemote": {
 				"title": "Confirm deletion",
-				"description": "Are you sure? This will move all {{count}} files and directories into the local trash. This action cannot be undone.",
+				"description": "Are you sure? This will move {{count}} files and directories into the local trash. This action cannot be undone.",
 				"continue": "Confirm"
 			},
 			"confirmDeletionBoth": {
 				"title": "Confirm deletion",
-				"description": "Are you sure? This will move all {{count}} files and directories into the local and cloud trash. This action cannot be undone.",
+				"description": "Are you sure? This will move {{count}} files and directories into the local and cloud trash. This action cannot be undone.",
 				"continue": "Confirm"
 			},
 			"confirmDeletionRestart": {

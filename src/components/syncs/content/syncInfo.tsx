@@ -146,10 +146,10 @@ export const SyncInfo = memo(({ syncUUID, paused }: { syncUUID: string; paused: 
 							: t("syncs.dialogs.confirmDeletionRemote.continue"),
 				description:
 					confirmDeletion.where === "both"
-						? t("syncs.dialogs.confirmDeletionBoth.description", { count: confirmDeletion.previous })
+						? t("syncs.dialogs.confirmDeletionBoth.description", { count: confirmDeletion.count ?? confirmDeletion.previous })
 						: confirmDeletion.where === "local"
-							? t("syncs.dialogs.confirmDeletionLocal.description", { count: confirmDeletion.previous })
-							: t("syncs.dialogs.confirmDeletionRemote.description", { count: confirmDeletion.previous }),
+							? t("syncs.dialogs.confirmDeletionLocal.description", { count: confirmDeletion.count ?? confirmDeletion.previous })
+							: t("syncs.dialogs.confirmDeletionRemote.description", { count: confirmDeletion.count ?? confirmDeletion.previous }),
 				continueButtonVariant: "destructive"
 			}))
 		) {
@@ -231,10 +231,10 @@ export const SyncInfo = memo(({ syncUUID, paused }: { syncUUID: string; paused: 
 								/>
 								<p>
 									{confirmDeletion.where === "both"
-										? t("syncs.info.confirmDeletionBoth", { previous: confirmDeletion.previous })
+										? t("syncs.info.confirmDeletionBoth", { previous: confirmDeletion.count ?? confirmDeletion.previous })
 										: confirmDeletion.where === "local"
-											? t("syncs.info.confirmDeletionLocal", { previous: confirmDeletion.previous })
-											: t("syncs.info.confirmDeletionRemote", { previous: confirmDeletion.previous })}
+											? t("syncs.info.confirmDeletionLocal", { previous: confirmDeletion.count ?? confirmDeletion.previous })
+											: t("syncs.info.confirmDeletionRemote", { previous: confirmDeletion.count ?? confirmDeletion.previous })}
 								</p>
 								<p
 									className="text-red-500 hover:underline cursor-pointer"

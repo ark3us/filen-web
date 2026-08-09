@@ -22,6 +22,15 @@ import { showConfirmDialog } from "@/components/dialogs/confirm"
 import { showInputDialog } from "@/components/dialogs/input"
 import { doesSyncNameExist } from "@/components/dialogs/createSync"
 
+/**
+ * Mirror of the engine's normalizeLargeDeletionThreshold acceptance rule (whole number >= 1; anything
+ * else falls back to the whole-pair default). Kept as ONE predicate for validation, dialog seeding and
+ * display, so the UI can never show a value as armed that the engine ignores.
+ */
+export function isValidLargeDeletionThreshold(value: unknown): value is number {
+	return typeof value === "number" && Number.isInteger(value) && value >= 1
+}
+
 export const Settings = memo(({ sync }: { sync: SyncPair }) => {
 	const [, setDesktopConfig] = useDesktopConfig()
 	const { t } = useTranslation()
@@ -258,6 +267,89 @@ export const Settings = memo(({ sync }: { sync: SyncPair }) => {
 		},
 		[setDesktopConfig, sync.uuid, setChanging, errorToast, loadingToast, setSelectedSync, isSyncActive]
 	)
+
+	const editLargeDeletionThreshold = useCallback(async () => {
+		if (isSyncActive) {
+			return
+		}
+
+		const inputResponse = await showInputDialog({
+			title: t("syncs.dialogs.largeDeletionThreshold.title"),
+			continueButtonText: t("syncs.dialogs.largeDeletionThreshold.continue"),
+			value: isValidLargeDeletionThreshold(sync.largeDeletionThreshold) ? sync.largeDeletionThreshold.toString() : "",
+			autoFocusInput: true,
+			placeholder: t("syncs.dialogs.largeDeletionThreshold.placeholder")
+		})
+
+		if (inputResponse.cancelled) {
+			return
+		}
+
+		const value = inputResponse.value.trim()
+		// Empty clears the threshold: back to the default rule, which asks only when a cycle would delete
+		// everything the pair has synced. Anything else must be a whole number of files, rejected here rather
+		// than silently dropped by the engine (which would leave the user thinking a bad value took effect).
+		const largeDeletionThreshold = value.length === 0 ? undefined : Number(value)
+
+		if (largeDeletionThreshold !== undefined && !isValidLargeDeletionThreshold(largeDeletionThreshold)) {
+			errorToast(t("syncs.settings.sections.largeDeletionThreshold.invalid"))
+
+			return
+		}
+
+		setChanging(true)
+
+		const toast = loadingToast()
+
+		try {
+			await window.desktopAPI.syncUpdateLargeDeletionThreshold({
+				uuid: sync.uuid,
+				largeDeletionThreshold
+			})
+
+			setSelectedSync(prev =>
+				prev && prev.uuid === sync.uuid
+					? {
+							...prev,
+							largeDeletionThreshold
+						}
+					: prev
+			)
+
+			setDesktopConfig(prev => ({
+				...prev,
+				syncConfig: {
+					...prev.syncConfig,
+					syncPairs: prev.syncConfig.syncPairs.map(pair =>
+						pair.uuid === sync.uuid
+							? {
+									...pair,
+									largeDeletionThreshold
+								}
+							: pair
+					)
+				}
+			}))
+		} catch (e) {
+			console.error(e)
+
+			errorToast((e as unknown as Error).message ?? (e as unknown as Error).toString())
+		} finally {
+			setChanging(false)
+
+			toast.dismiss()
+		}
+	}, [
+		setDesktopConfig,
+		sync.uuid,
+		sync.largeDeletionThreshold,
+		setChanging,
+		errorToast,
+		loadingToast,
+		setSelectedSync,
+		isSyncActive,
+		t
+	])
 
 	const toggleExcludeDotFiles = useCallback(
 		async (excludeDotFiles: boolean) => {
@@ -585,17 +677,47 @@ export const Settings = memo(({ sync }: { sync: SyncPair }) => {
 						<Section
 							name={t("syncs.settings.sections.requireConfirmationOnLargeDeletion.name")}
 							info={t("syncs.settings.sections.requireConfirmationOnLargeDeletion.info")}
+							// The threshold below is a parameter OF this switch, not a setting beside it: it only lowers the
+							// bar this same gate already uses, and it means nothing while the switch is off. Dropping the
+							// divider between them (and indenting the child) is what makes them read as one group instead of
+							// two unrelated rows that happen to be adjacent.
+							withBottomBorder={sync.requireConfirmationOnLargeDeletion === false}
 						>
+							{/* Off only when explicitly off. A pair from before this field existed has no value, and the
+							    main process defaults those to ON — showing the switch off for them would have claimed the
+							    gate was disabled while it was in fact running, which is the worse of the two lies. Same
+							    rule the threshold row below is rendered by, so the group cannot contradict itself. */}
 							<Switch
-								checked={
-									typeof sync.requireConfirmationOnLargeDeletion === "boolean"
-										? sync.requireConfirmationOnLargeDeletion
-										: false
-								}
+								checked={sync.requireConfirmationOnLargeDeletion !== false}
 								onCheckedChange={toggleRequireConfirmationOnLargeDeletion}
 								disabled={changing || isSyncActive}
 							/>
 						</Section>
+						{sync.requireConfirmationOnLargeDeletion !== false && (
+							<Section
+								name={t("syncs.settings.sections.largeDeletionThreshold.name")}
+								info={t("syncs.settings.sections.largeDeletionThreshold.info")}
+								className="pl-6"
+							>
+								<div className="flex flex-row gap-3 items-center">
+									<p className="text-muted-foreground text-sm">
+										{isValidLargeDeletionThreshold(sync.largeDeletionThreshold)
+											? t("syncs.settings.sections.largeDeletionThreshold.items", {
+													count: sync.largeDeletionThreshold
+												})
+											: t("syncs.settings.sections.largeDeletionThreshold.wholePair")}
+									</p>
+									<Button
+										onClick={editLargeDeletionThreshold}
+										variant="secondary"
+										size="sm"
+										disabled={changing || isSyncActive}
+									>
+										<Edit size={18} />
+									</Button>
+								</div>
+							</Section>
+						)}
 						<Section
 							name={t("syncs.settings.sections.name.name")}
 							info={t("syncs.settings.sections.name.info")}
