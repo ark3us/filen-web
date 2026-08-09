@@ -12,8 +12,6 @@ export default function useDriveListColumnSize() {
 
 	const sizes = useMemo(() => {
 		return {
-			// Original location column, shown in the trash view only. Hidden on mobile (no room).
-			location: isMobile ? 0 : 250,
 			size: isMobile ? 50 : 100,
 			modified: isMobile ? 100 : 250,
 			more: isMobile ? 0 : 30

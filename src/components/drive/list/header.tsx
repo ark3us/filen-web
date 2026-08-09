@@ -66,12 +66,7 @@ export const Header = memo(() => {
 					</div>
 				</div>
 				{driveURLState.trash && (
-					<div
-						className="flex flex-row items-center shrink-0"
-						style={{
-							width: driveListColumnSize.location
-						}}
-					>
+					<div className="hidden md:flex flex-row flex-1 min-w-0 items-center">
 						<p className="dragselect-start-disallowed line-clamp-1 text-ellipsis text-muted-foreground">
 							{t("drive.header.location")}
 						</p>
