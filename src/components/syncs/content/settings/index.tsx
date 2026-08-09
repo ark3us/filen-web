@@ -683,12 +683,12 @@ export const Settings = memo(({ sync }: { sync: SyncPair }) => {
 							// two unrelated rows that happen to be adjacent.
 							withBottomBorder={sync.requireConfirmationOnLargeDeletion === false}
 						>
+							{/* Off only when explicitly off. A pair from before this field existed has no value, and the
+							    main process defaults those to ON — showing the switch off for them would have claimed the
+							    gate was disabled while it was in fact running, which is the worse of the two lies. Same
+							    rule the threshold row below is rendered by, so the group cannot contradict itself. */}
 							<Switch
-								checked={
-									typeof sync.requireConfirmationOnLargeDeletion === "boolean"
-										? sync.requireConfirmationOnLargeDeletion
-										: false
-								}
+								checked={sync.requireConfirmationOnLargeDeletion !== false}
 								onCheckedChange={toggleRequireConfirmationOnLargeDeletion}
 								disabled={changing || isSyncActive}
 							/>
