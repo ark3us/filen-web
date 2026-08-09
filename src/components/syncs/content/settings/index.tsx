@@ -22,6 +22,15 @@ import { showConfirmDialog } from "@/components/dialogs/confirm"
 import { showInputDialog } from "@/components/dialogs/input"
 import { doesSyncNameExist } from "@/components/dialogs/createSync"
 
+/**
+ * Mirror of the engine's normalizeLargeDeletionThreshold acceptance rule (whole number >= 1; anything
+ * else falls back to the whole-pair default). Kept as ONE predicate for validation, dialog seeding and
+ * display, so the UI can never show a value as armed that the engine ignores.
+ */
+export function isValidLargeDeletionThreshold(value: unknown): value is number {
+	return typeof value === "number" && Number.isInteger(value) && value >= 1
+}
+
 export const Settings = memo(({ sync }: { sync: SyncPair }) => {
 	const [, setDesktopConfig] = useDesktopConfig()
 	const { t } = useTranslation()
@@ -267,7 +276,7 @@ export const Settings = memo(({ sync }: { sync: SyncPair }) => {
 		const inputResponse = await showInputDialog({
 			title: t("syncs.dialogs.largeDeletionThreshold.title"),
 			continueButtonText: t("syncs.dialogs.largeDeletionThreshold.continue"),
-			value: typeof sync.largeDeletionThreshold === "number" ? sync.largeDeletionThreshold.toString() : "",
+			value: isValidLargeDeletionThreshold(sync.largeDeletionThreshold) ? sync.largeDeletionThreshold.toString() : "",
 			autoFocusInput: true,
 			placeholder: t("syncs.dialogs.largeDeletionThreshold.placeholder")
 		})
@@ -282,7 +291,7 @@ export const Settings = memo(({ sync }: { sync: SyncPair }) => {
 		// than silently dropped by the engine (which would leave the user thinking a bad value took effect).
 		const largeDeletionThreshold = value.length === 0 ? undefined : Number(value)
 
-		if (largeDeletionThreshold !== undefined && (!Number.isInteger(largeDeletionThreshold) || largeDeletionThreshold < 1)) {
+		if (largeDeletionThreshold !== undefined && !isValidLargeDeletionThreshold(largeDeletionThreshold)) {
 			errorToast(t("syncs.settings.sections.largeDeletionThreshold.invalid"))
 
 			return
@@ -679,14 +688,14 @@ export const Settings = memo(({ sync }: { sync: SyncPair }) => {
 								disabled={changing || isSyncActive}
 							/>
 						</Section>
-						{sync.requireConfirmationOnLargeDeletion === true && (
+						{sync.requireConfirmationOnLargeDeletion !== false && (
 							<Section
 								name={t("syncs.settings.sections.largeDeletionThreshold.name")}
 								info={t("syncs.settings.sections.largeDeletionThreshold.info")}
 							>
 								<div className="flex flex-row gap-3 items-center">
 									<p className="text-muted-foreground text-sm">
-										{typeof sync.largeDeletionThreshold === "number"
+										{isValidLargeDeletionThreshold(sync.largeDeletionThreshold)
 											? t("syncs.settings.sections.largeDeletionThreshold.items", {
 													count: sync.largeDeletionThreshold
 												})
