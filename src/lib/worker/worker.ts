@@ -542,6 +542,41 @@ export async function listTrash(): Promise<DriveCloudItem[]> {
 	return driveItems
 }
 
+// Session-scoped cache: many trashed items share the same original parent, and resolving a path
+// walks the parent chain with one API request per ancestor (plus a drive lock per call).
+const directoryUUIDToPathCache = new Map<string, string>()
+
+/**
+ * Resolve the full drive path of a directory from its UUID. Returns null if the directory
+ * cannot be resolved (e.g. an ancestor was permanently deleted). Errors are not cached so a
+ * later attempt can still succeed.
+ */
+export async function directoryUUIDToPath({ uuid }: { uuid: string }): Promise<string | null> {
+	await waitForInitialization()
+
+	if (uuid === getSDK().config.baseFolderUUID) {
+		return "/"
+	}
+
+	const cached = directoryUUIDToPathCache.get(uuid)
+
+	if (cached) {
+		return cached
+	}
+
+	try {
+		const path = await getSDK().cloud().directoryUUIDToPath({ uuid })
+
+		directoryUUIDToPathCache.set(uuid, path)
+
+		return path
+	} catch (e) {
+		console.error(e)
+
+		return null
+	}
+}
+
 export async function downloadFile({
 	item,
 	fileHandle

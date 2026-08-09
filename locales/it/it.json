@@ -1077,7 +1077,8 @@
         "header": {
             "name": "Nome",
             "size": "Dimensione",
-            "modified": "Modificato"
+            "modified": "Modificato",
+            "location": "Posizione originale"
         },
         "list": {
             "item": {

@@ -6,6 +6,7 @@ import { ArrowUp, ArrowDown } from "lucide-react"
 import { useDriveItemsStore } from "@/stores/drive.store"
 import { cn } from "@/lib/utils"
 import useDriveListColumnSize from "@/hooks/useDriveListColumnSize"
+import useDriveURLState from "@/hooks/useDriveURLState"
 
 const iconSize = 14
 
@@ -17,6 +18,7 @@ export const Header = memo(() => {
 	const { t } = useTranslation()
 	const items = useDriveItemsStore(useCallback(state => state.items, []))
 	const driveListColumnSize = useDriveListColumnSize()
+	const driveURLState = useDriveURLState()
 
 	const name = useCallback(() => {
 		setDriveSortBy(prev => ({
@@ -63,6 +65,18 @@ export const Header = memo(() => {
 						{driveSortBy[routeParent] === "nameDesc" && <ArrowDown size={iconSize} />}
 					</div>
 				</div>
+				{driveURLState.trash && (
+					<div
+						className="flex flex-row items-center shrink-0"
+						style={{
+							width: driveListColumnSize.location
+						}}
+					>
+						<p className="dragselect-start-disallowed line-clamp-1 text-ellipsis text-muted-foreground">
+							{t("drive.header.location")}
+						</p>
+					</div>
+				)}
 				<div
 					className="flex flex-row items-center cursor-pointer shrink-0"
 					onClick={size}

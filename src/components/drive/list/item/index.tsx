@@ -24,6 +24,7 @@ import useLoadingToast from "@/hooks/useLoadingToast"
 import { useDirectoryPublicLinkStore } from "@/stores/publicLink.store"
 import { usePublicLinkURLState } from "@/hooks/usePublicLink"
 import useDriveURLState from "@/hooks/useDriveURLState"
+import Location from "./location"
 import useDriveListColumnSize from "@/hooks/useDriveListColumnSize"
 import { useDoubleTap } from "use-double-tap"
 import useIsMobile from "@/hooks/useIsMobile"
@@ -525,6 +526,16 @@ export const ListItem = memo(({ item, index, type }: { item: DriveCloudItem; ind
 								</div>
 							)}
 						</div>
+						{driveURLState.trash && (
+							<div
+								className="flex flex-row dragselect-start-disallowed shrink-0"
+								style={{
+									width: driveListColumnSize.location
+								}}
+							>
+								<Location parent={item.parent} />
+							</div>
+						)}
 						<div
 							className="flex flex-row dragselect-start-disallowed shrink-0"
 							style={{
