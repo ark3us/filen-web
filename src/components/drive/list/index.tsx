@@ -14,6 +14,7 @@ import { convertTimestampToMs } from "@/utils"
 import { type DriveSortBy } from "./header"
 import eventEmitter from "@/lib/eventEmitter"
 import { directoryUUIDToNameCache } from "@/cache"
+import { useDirectoryPathsStore, resolveDirectoryPath } from "@/stores/directoryPaths.store"
 
 export const List = memo(() => {
 	const { items, setItems, searchTerm } = useDriveItemsStore(
@@ -41,6 +42,7 @@ export const List = memo(() => {
 	)
 	const queryUpdatedAtRef = useRef<number>(-1)
 	const [driveSortBy] = useLocalStorage<DriveSortBy>("driveSortBy", {})
+	const directoryPaths = useDirectoryPathsStore(state => state.paths)
 
 	const query = useQuery({
 		queryKey: ["listDirectory", parent, currentReceiverId, location],
@@ -74,9 +76,25 @@ export const List = memo(() => {
 
 		return orderItemsByType({
 			items,
-			type: sortBy ? sortBy : "nameAsc"
+			type: sortBy ? sortBy : "nameAsc",
+			directoryPaths
 		})
-	}, [items, location, driveSortBy, parent])
+	}, [items, location, driveSortBy, parent, directoryPaths])
+
+	// Sorting by location needs the path of every item, not just the visible rows' lazily resolved
+	// ones. Resolution is deduplicated per UUID and cached, so re-runs only fetch what is missing;
+	// the list re-sorts reactively as paths land in the store.
+	useEffect(() => {
+		const sortBy = driveSortBy[parent]
+
+		if (!location.includes("/trash") || (sortBy !== "locationAsc" && sortBy !== "locationDesc")) {
+			return
+		}
+
+		for (const uuid of new Set(items.map(item => item.parent))) {
+			resolveDirectoryPath(uuid).catch(console.error)
+		}
+	}, [items, driveSortBy, parent, location])
 
 	const itemsFiltered = useMemo(() => {
 		if (searchTerm.length === 0) {

@@ -10,7 +10,10 @@ import useDriveURLState from "@/hooks/useDriveURLState"
 
 const iconSize = 14
 
-export type DriveSortBy = Record<string, "nameAsc" | "nameDesc" | "sizeAsc" | "sizeDesc" | "lastModifiedAsc" | "lastModifiedDesc">
+export type DriveSortBy = Record<
+	string,
+	"nameAsc" | "nameDesc" | "sizeAsc" | "sizeDesc" | "lastModifiedAsc" | "lastModifiedDesc" | "locationAsc" | "locationDesc"
+>
 
 export const Header = memo(() => {
 	const [driveSortBy, setDriveSortBy] = useLocalStorage<DriveSortBy>("driveSortBy", {})
@@ -92,6 +95,17 @@ export const Header = memo(() => {
 		}))
 	}, [setDriveSortBy, routeParent])
 
+	const locationSort = useCallback(() => {
+		if (resizingRef.current) {
+			return
+		}
+
+		setDriveSortBy(prev => ({
+			...prev,
+			[routeParent]: prev[routeParent] === "locationDesc" ? "locationAsc" : "locationDesc"
+		}))
+	}, [setDriveSortBy, routeParent])
+
 	const modified = useCallback(() => {
 		if (resizingRef.current) {
 			return
@@ -129,7 +143,8 @@ export const Header = memo(() => {
 				</div>
 				{driveURLState.trash && (
 					<div
-						className="relative hidden md:flex flex-row items-center shrink-0"
+						className="relative hidden md:flex flex-row items-center cursor-pointer shrink-0"
+						onClick={locationSort}
 						style={{
 							width: driveListColumnSize.location
 						}}
@@ -139,9 +154,18 @@ export const Header = memo(() => {
 							onMouseDown={startResize("location")}
 							onDoubleClick={resetWidth("location")}
 						/>
-						<p className="dragselect-start-disallowed line-clamp-1 text-ellipsis text-muted-foreground">
-							{t("drive.header.location")}
-						</p>
+						<div
+							className={cn(
+								"flex flex-row gap-2 items-center",
+								driveSortBy[routeParent] === "locationAsc" || driveSortBy[routeParent] === "locationDesc"
+									? "text-primary"
+									: "text-muted-foreground"
+							)}
+						>
+							<p className="dragselect-start-disallowed line-clamp-1 text-ellipsis">{t("drive.header.location")}</p>
+							{driveSortBy[routeParent] === "locationAsc" && <ArrowUp size={iconSize} />}
+							{driveSortBy[routeParent] === "locationDesc" && <ArrowDown size={iconSize} />}
+						</div>
 					</div>
 				)}
 				<div

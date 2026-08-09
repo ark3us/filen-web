@@ -6,7 +6,8 @@ export function parseNumbersFromString(string: string): number {
 
 export function orderItemsByType({
 	items,
-	type
+	type,
+	directoryPaths
 }: {
 	items: DriveCloudItem[]
 	type:
@@ -22,6 +23,11 @@ export function orderItemsByType({
 		| "lastModifiedDesc"
 		| "uploadDateAsc"
 		| "uploadDateDesc"
+		| "locationAsc"
+		| "locationDesc"
+	// Resolved directory paths by UUID, required only for location sorting (trash view). Items whose
+	// parent path is not resolved yet sort as "" and reorder as resolutions land in the store.
+	directoryPaths?: Record<string, string>
 }): DriveCloudItem[] {
 	if (type === "nameAsc") {
 		return items.sort((a, b) => {
@@ -125,6 +131,30 @@ export function orderItemsByType({
 
 				return b.lastModified - a.lastModified
 			})
+	} else if (type === "locationAsc" || type === "locationDesc") {
+		return items.sort((a, b) => {
+			const pathA = directoryPaths?.[a.parent] ?? ""
+			const pathB = directoryPaths?.[b.parent] ?? ""
+
+			if (pathA !== pathB) {
+				return type === "locationAsc"
+					? pathA.localeCompare(pathB, "en", {
+							numeric: true
+						})
+					: pathB.localeCompare(pathA, "en", {
+							numeric: true
+						})
+			}
+
+			// Same original folder: keep the usual directories-first, then name ordering.
+			if (a.type !== b.type) {
+				return a.type === "directory" ? -1 : 1
+			}
+
+			return a.name.localeCompare(b.name, "en", {
+				numeric: true
+			})
+		})
 	} else if (type === "uploadDateAsc") {
 		return items.sort((a, b) => {
 			if (a.type !== b.type) {
