@@ -35,7 +35,8 @@ export const DesktopHandler = memo(() => {
 	const isSyncActive = useIsSyncActive()
 	const syncIssueCount = useSyncIssueCount()
 	const [startMinimizedEnabled] = useLocalStorage<boolean>("startMinimizedEnabled", false)
-	const [bandwidthLimits] = useLocalStorage<BandwidthLimits>("bandwidthLimits", { uploadMbps: 0, downloadMbps: 0 })
+	// Destructured: useLocalStorage parses a new object on every render, the numbers only change with the setting.
+	const [{ uploadMbps, downloadMbps }] = useLocalStorage<BandwidthLimits>("bandwidthLimits", { uploadMbps: 0, downloadMbps: 0 })
 	const syncConfirmDeletion = useSyncConfirmDeletion()
 	const { uploadsInProgress: networkDriveUploadsInProgress } = useNetworkDriveStats()
 
@@ -128,8 +129,8 @@ export const DesktopHandler = memo(() => {
 			return
 		}
 
-		window.desktopAPI.setBandwidthLimits(bandwidthLimits).catch(console.error)
-	}, [bandwidthLimits, authed])
+		window.desktopAPI.setBandwidthLimits({ uploadMbps, downloadMbps }).catch(console.error)
+	}, [uploadMbps, downloadMbps, authed])
 
 	useEffect(() => {
 		;(async () => {

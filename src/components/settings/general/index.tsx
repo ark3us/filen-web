@@ -189,17 +189,28 @@ export const General = memo(() => {
 		[setDefaultNoteType]
 	)
 
-	const onBandwidthLimitChange = useCallback(
-		(direction: keyof BandwidthLimits) => (e: React.ChangeEvent<HTMLInputElement>) => {
+	// Applied when the field is left (or on Enter), not per keystroke: typing 150 would otherwise throttle running transfers
+	// to 1 and then 15 Mbit/s on the way. Anything that is not a number, a half-typed decimal included, puts the saved value back.
+	const onBandwidthLimitBlur = useCallback(
+		(direction: keyof BandwidthLimits) => (e: React.FocusEvent<HTMLInputElement>) => {
 			const mbps = parseFloat(e.target.value.trim())
+			const next = Number.isFinite(mbps) ? Math.max(0, mbps) : bandwidthLimits[direction]
+
+			e.target.value = String(next)
 
 			setBandwidthLimits(prev => ({
 				...prev,
-				[direction]: Number.isFinite(mbps) && mbps > 0 ? mbps : 0
+				[direction]: next
 			}))
 		},
-		[setBandwidthLimits]
+		[bandwidthLimits, setBandwidthLimits]
 	)
+
+	const onBandwidthLimitKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter") {
+			e.currentTarget.blur()
+		}
+	}, [])
 
 	const logoutFn = useCallback(
 		async (e: React.MouseEvent<HTMLParagraphElement, MouseEvent>) => {
@@ -450,10 +461,11 @@ export const General = memo(() => {
 									<p className="text-sm text-muted-foreground">{limitToReadable(bandwidthLimits.uploadMbps)}</p>
 								)}
 								<Input
-									value={bandwidthLimits.uploadMbps}
+									defaultValue={bandwidthLimits.uploadMbps}
 									type="number"
 									min={0}
-									onChange={onBandwidthLimitChange("uploadMbps")}
+									onBlur={onBandwidthLimitBlur("uploadMbps")}
+									onKeyDown={onBandwidthLimitKeyDown}
 									className="w-[80px]"
 								/>
 							</Section>
@@ -465,10 +477,11 @@ export const General = memo(() => {
 									<p className="text-sm text-muted-foreground">{limitToReadable(bandwidthLimits.downloadMbps)}</p>
 								)}
 								<Input
-									value={bandwidthLimits.downloadMbps}
+									defaultValue={bandwidthLimits.downloadMbps}
 									type="number"
 									min={0}
-									onChange={onBandwidthLimitChange("downloadMbps")}
+									onBlur={onBandwidthLimitBlur("downloadMbps")}
+									onKeyDown={onBandwidthLimitKeyDown}
 									className="w-[80px]"
 								/>
 							</Section>
