@@ -833,6 +833,14 @@
                     "name": "Minimizza nella barra delle applicazioni",
                     "info": "Nascondi Filen nella barra delle applicazioni invece di minimizzare la finestra"
                 },
+                "uploadLimit": {
+                    "name": "Limite di upload (Mbit/s)",
+                    "info": "Per sincronizzazione, disco di rete, WebDAV e S3. 0 significa nessun limite. Circa il 60-70% dell'upload misurato da uno speed test mantiene reattivo il resto della connessione"
+                },
+                "downloadLimit": {
+                    "name": "Limite di download (Mbit/s)",
+                    "info": "Per sincronizzazione, download su questo computer, disco di rete, WebDAV e S3. 0 significa nessun limite"
+                },
                 "autoLaunch": {
                     "name": "Avvio automatico",
                     "info": "Avvia Filen automaticamente all'avvio del sistema"

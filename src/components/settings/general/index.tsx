@@ -18,6 +18,15 @@ import { useQuery } from "@tanstack/react-query"
 import Skeletons from "../skeletons"
 import useSettingsContainerSize from "@/hooks/useSettingsContainerSize"
 import { logout } from "@/lib/setup"
+import { Input } from "@/components/ui/input"
+import { type BandwidthLimits } from "@filen/desktop/dist/types"
+import { bpsToReadable } from "@/components/transfers/utils"
+
+// A limit in the unit transfer speeds are shown in, so Mbit/s and MB/s cannot be mixed up. Mirrors the desktop, which raises
+// anything below 1 Mbit/s to 1.
+function limitToReadable(mbps: number): string {
+	return `≈ ${bpsToReadable((Math.max(1, mbps) * 1000 * 1000) / 8)}`
+}
 
 export const General = memo(() => {
 	const account = useAccount()
@@ -32,6 +41,7 @@ export const General = memo(() => {
 	const [minimizeToTrayEnabled, setMinimizeToTrayEnabled] = useLocalStorage<boolean>("minimizeToTrayEnabled", false)
 	const [notificationSoundEnabled, setNotificationSoundEnabled] = useLocalStorage<boolean>("notificationSoundEnabled", false)
 	const [startMinimizedEnabled, setStartMinimizedEnabled] = useLocalStorage<boolean>("startMinimizedEnabled", false)
+	const [bandwidthLimits, setBandwidthLimits] = useLocalStorage<BandwidthLimits>("bandwidthLimits", { uploadMbps: 0, downloadMbps: 0 })
 
 	const thumbnailCacheQuery = useQuery({
 		queryKey: ["workerCalculateThumbnailCacheUsage"],
@@ -178,6 +188,29 @@ export const General = memo(() => {
 		},
 		[setDefaultNoteType]
 	)
+
+	// Applied when the field is left (or on Enter), not per keystroke: typing 150 would otherwise throttle running transfers
+	// to 1 and then 15 Mbit/s on the way. Anything that is not a number, a half-typed decimal included, puts the saved value back.
+	const onBandwidthLimitBlur = useCallback(
+		(direction: keyof BandwidthLimits) => (e: React.FocusEvent<HTMLInputElement>) => {
+			const mbps = parseFloat(e.target.value.trim())
+			const next = Number.isFinite(mbps) ? Math.max(0, mbps) : bandwidthLimits[direction]
+
+			e.target.value = String(next)
+
+			setBandwidthLimits(prev => ({
+				...prev,
+				[direction]: next
+			}))
+		},
+		[bandwidthLimits, setBandwidthLimits]
+	)
+
+	const onBandwidthLimitKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter") {
+			e.currentTarget.blur()
+		}
+	}, [])
 
 	const logoutFn = useCallback(
 		async (e: React.MouseEvent<HTMLParagraphElement, MouseEvent>) => {
@@ -417,6 +450,39 @@ export const General = memo(() => {
 								<Switch
 									checked={startMinimizedEnabled}
 									onCheckedChange={setStartMinimizedEnabled}
+								/>
+							</Section>
+							<Section
+								name={t("settings.general.sections.uploadLimit.name")}
+								info={t("settings.general.sections.uploadLimit.info")}
+								className="mt-10"
+							>
+								{bandwidthLimits.uploadMbps > 0 && (
+									<p className="text-sm text-muted-foreground">{limitToReadable(bandwidthLimits.uploadMbps)}</p>
+								)}
+								<Input
+									defaultValue={bandwidthLimits.uploadMbps}
+									type="number"
+									min={0}
+									onBlur={onBandwidthLimitBlur("uploadMbps")}
+									onKeyDown={onBandwidthLimitKeyDown}
+									className="w-[80px]"
+								/>
+							</Section>
+							<Section
+								name={t("settings.general.sections.downloadLimit.name")}
+								info={t("settings.general.sections.downloadLimit.info")}
+							>
+								{bandwidthLimits.downloadMbps > 0 && (
+									<p className="text-sm text-muted-foreground">{limitToReadable(bandwidthLimits.downloadMbps)}</p>
+								)}
+								<Input
+									defaultValue={bandwidthLimits.downloadMbps}
+									type="number"
+									min={0}
+									onBlur={onBandwidthLimitBlur("downloadMbps")}
+									onKeyDown={onBandwidthLimitKeyDown}
+									className="w-[80px]"
 								/>
 							</Section>
 							<Section

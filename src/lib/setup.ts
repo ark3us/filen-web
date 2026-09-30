@@ -76,6 +76,7 @@ export async function resetLocalStorage(): Promise<void> {
 	const mainContainerResizablePanelSizes = window.localStorage.getItem("mainContainerResizablePanelSizes")
 	const mainContainerResizablePanelSizesNotes = window.localStorage.getItem("mainContainerResizablePanelSizes:notes")
 	const minimizeToTrayEnabled = window.localStorage.getItem("minimizeToTrayEnabled")
+	const bandwidthLimits = window.localStorage.getItem("bandwidthLimits")
 	const sideBarTreeOpen = window.localStorage.getItem("sideBarTreeOpen")
 	const textEditorResizablePanelSizes = window.localStorage.getItem("textEditorResizablePanelSizes")
 	const textEditorResizablePanelSizesNotes = window.localStorage.getItem("textEditorResizablePanelSizes:notes")
@@ -179,6 +180,10 @@ export async function resetLocalStorage(): Promise<void> {
 
 	if (minimizeToTrayEnabled) {
 		window.localStorage.setItem("minimizeToTrayEnabled", minimizeToTrayEnabled)
+	}
+
+	if (bandwidthLimits) {
+		window.localStorage.setItem("bandwidthLimits", bandwidthLimits)
 	}
 
 	if (sideBarTreeOpen) {
