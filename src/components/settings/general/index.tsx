@@ -20,6 +20,13 @@ import useSettingsContainerSize from "@/hooks/useSettingsContainerSize"
 import { logout } from "@/lib/setup"
 import { Input } from "@/components/ui/input"
 import { type BandwidthLimits } from "@filen/desktop/dist/types"
+import { bpsToReadable } from "@/components/transfers/utils"
+
+// A limit in the unit transfer speeds are shown in, so Mbit/s and MB/s cannot be mixed up. Mirrors the desktop, which raises
+// anything below 1 Mbit/s to 1.
+function limitToReadable(mbps: number): string {
+	return `≈ ${bpsToReadable((Math.max(1, mbps) * 1000 * 1000) / 8)}`
+}
 
 export const General = memo(() => {
 	const account = useAccount()
@@ -439,6 +446,9 @@ export const General = memo(() => {
 								info={t("settings.general.sections.uploadLimit.info")}
 								className="mt-10"
 							>
+								{bandwidthLimits.uploadMbps > 0 && (
+									<p className="text-sm text-muted-foreground">{limitToReadable(bandwidthLimits.uploadMbps)}</p>
+								)}
 								<Input
 									value={bandwidthLimits.uploadMbps}
 									type="number"
@@ -451,6 +461,9 @@ export const General = memo(() => {
 								name={t("settings.general.sections.downloadLimit.name")}
 								info={t("settings.general.sections.downloadLimit.info")}
 							>
+								{bandwidthLimits.downloadMbps > 0 && (
+									<p className="text-sm text-muted-foreground">{limitToReadable(bandwidthLimits.downloadMbps)}</p>
+								)}
 								<Input
 									value={bandwidthLimits.downloadMbps}
 									type="number"
