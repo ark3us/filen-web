@@ -13,6 +13,7 @@ import useIsSyncActive from "@/hooks/useIsSyncActive"
 import useSyncIssueCount from "@/hooks/useSyncIssueCount"
 import useSyncConfirmDeletion from "@/hooks/useSyncConfirmDeletion"
 import useNetworkDriveStats from "@/hooks/useNetworkDriveStats"
+import { type BandwidthLimits } from "@filen/desktop/dist/types"
 
 const updateDesktopConfigMutex = new Semaphore(1)
 
@@ -34,6 +35,7 @@ export const DesktopHandler = memo(() => {
 	const isSyncActive = useIsSyncActive()
 	const syncIssueCount = useSyncIssueCount()
 	const [startMinimizedEnabled] = useLocalStorage<boolean>("startMinimizedEnabled", false)
+	const [bandwidthLimits] = useLocalStorage<BandwidthLimits>("bandwidthLimits", { uploadMbps: 0, downloadMbps: 0 })
 	const syncConfirmDeletion = useSyncConfirmDeletion()
 	const { uploadsInProgress: networkDriveUploadsInProgress } = useNetworkDriveStats()
 
@@ -120,6 +122,14 @@ export const DesktopHandler = memo(() => {
 			window.desktopAPI.setStartMinimized(startMinimizedEnabled)
 		]).catch(console.error)
 	}, [minimizeToTrayEnabled, startMinimizedEnabled, authed])
+
+	useEffect(() => {
+		if (!authed) {
+			return
+		}
+
+		window.desktopAPI.setBandwidthLimits(bandwidthLimits).catch(console.error)
+	}, [bandwidthLimits, authed])
 
 	useEffect(() => {
 		;(async () => {

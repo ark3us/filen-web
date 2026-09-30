@@ -18,6 +18,8 @@ import { useQuery } from "@tanstack/react-query"
 import Skeletons from "../skeletons"
 import useSettingsContainerSize from "@/hooks/useSettingsContainerSize"
 import { logout } from "@/lib/setup"
+import { Input } from "@/components/ui/input"
+import { type BandwidthLimits } from "@filen/desktop/dist/types"
 
 export const General = memo(() => {
 	const account = useAccount()
@@ -32,6 +34,7 @@ export const General = memo(() => {
 	const [minimizeToTrayEnabled, setMinimizeToTrayEnabled] = useLocalStorage<boolean>("minimizeToTrayEnabled", false)
 	const [notificationSoundEnabled, setNotificationSoundEnabled] = useLocalStorage<boolean>("notificationSoundEnabled", false)
 	const [startMinimizedEnabled, setStartMinimizedEnabled] = useLocalStorage<boolean>("startMinimizedEnabled", false)
+	const [bandwidthLimits, setBandwidthLimits] = useLocalStorage<BandwidthLimits>("bandwidthLimits", { uploadMbps: 0, downloadMbps: 0 })
 
 	const thumbnailCacheQuery = useQuery({
 		queryKey: ["workerCalculateThumbnailCacheUsage"],
@@ -177,6 +180,18 @@ export const General = memo(() => {
 			setDefaultNoteType(type)
 		},
 		[setDefaultNoteType]
+	)
+
+	const onBandwidthLimitChange = useCallback(
+		(direction: keyof BandwidthLimits) => (e: React.ChangeEvent<HTMLInputElement>) => {
+			const mbps = parseFloat(e.target.value.trim())
+
+			setBandwidthLimits(prev => ({
+				...prev,
+				[direction]: Number.isFinite(mbps) && mbps > 0 ? mbps : 0
+			}))
+		},
+		[setBandwidthLimits]
 	)
 
 	const logoutFn = useCallback(
@@ -417,6 +432,31 @@ export const General = memo(() => {
 								<Switch
 									checked={startMinimizedEnabled}
 									onCheckedChange={setStartMinimizedEnabled}
+								/>
+							</Section>
+							<Section
+								name={t("settings.general.sections.uploadLimit.name")}
+								info={t("settings.general.sections.uploadLimit.info")}
+								className="mt-10"
+							>
+								<Input
+									value={bandwidthLimits.uploadMbps}
+									type="number"
+									min={0}
+									onChange={onBandwidthLimitChange("uploadMbps")}
+									className="w-[80px]"
+								/>
+							</Section>
+							<Section
+								name={t("settings.general.sections.downloadLimit.name")}
+								info={t("settings.general.sections.downloadLimit.info")}
+							>
+								<Input
+									value={bandwidthLimits.downloadMbps}
+									type="number"
+									min={0}
+									onChange={onBandwidthLimitChange("downloadMbps")}
+									className="w-[80px]"
 								/>
 							</Section>
 							<Section

@@ -857,6 +857,14 @@
 					"name": "Minimize to tray",
 					"info": "Hide Filen in the tray instead of minimizing the window"
 				},
+				"uploadLimit": {
+					"name": "Upload limit (Mbit/s)",
+					"info": "For sync, the network drive, WebDAV and S3. 0 means no limit. About 60-70% of your speed-test upload keeps the rest of the connection responsive"
+				},
+				"downloadLimit": {
+					"name": "Download limit (Mbit/s)",
+					"info": "For sync, downloads to this computer, the network drive, WebDAV and S3. 0 means no limit"
+				},
 				"startMinimized": {
 					"name": "Start minimized",
 					"info": "Enable or disable minimized startup"
